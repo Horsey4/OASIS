@@ -34,6 +34,7 @@ namespace OASIS
 
         static FsmFloat wrenchSize = FsmVariables.GlobalVariables.FindFsmFloat("ToolWrenchSize");
         static FsmBool usingRatchet = FsmVariables.GlobalVariables.FindFsmBool("PlayerHasRatchet");
+        static Transform spanner;
         static Material highlightMaterial;
         static FsmBool ratchetSwitch;
 
@@ -78,9 +79,9 @@ namespace OASIS
             transform.localPosition += transform.localRotation * positionStep * -maxTightness;
             transform.localRotation *= Quaternion.Euler(rotationStep * -maxTightness);
 
-            if (ratchetSwitch == null)
+            if (!spanner)
             {
-                var spanner = GameObject.Find("PLAYER/Pivot/AnimPivot/Camera/FPSCamera").transform.Find("2Spanner");
+                spanner = GameObject.Find("PLAYER/Pivot/AnimPivot/Camera/FPSCamera").transform.Find("2Spanner");
 
                 var fsm = spanner.Find("Pivot/Ratchet").GetComponent<PlayMakerFSM>();
                 fsm.InitializeFSM();
