@@ -113,6 +113,7 @@ namespace OASIS
         public Func<bool> canDetach;
         public Collider[] triggers;
         public Bolt[] bolts;
+        public bool disableSound;
         public bool useCustomLayerMask;
         int _attachedTo = -1;
         int triggerIndex = -1;
@@ -138,7 +139,7 @@ namespace OASIS
                 var index = attachedTo;
                 attachedTo = -1;
                 onDetach?.Invoke(index);
-                MasterAudio.PlaySound3DAndForget("CarBuilding", sourceTrans: transform, variationName: "disassemble");
+                if (!disableSound) MasterAudio.PlaySound3DAndForget("CarBuilding", sourceTrans: transform, variationName: "disassemble");
                 CursorGUI.disassemble = false;
             }
             else CursorGUI.disassemble = true;
@@ -181,7 +182,7 @@ namespace OASIS
                 attachedTo = triggerIndex;
                 onAttach?.Invoke(triggerIndex);
                 triggerIndex = -1;
-                MasterAudio.PlaySound3DAndForget("CarBuilding", sourceTrans: transform, variationName: "assemble");
+                if (!disableSound) MasterAudio.PlaySound3DAndForget("CarBuilding", sourceTrans: transform, variationName: "assemble");
                 CursorGUI.assemble = false;
             }
             else CursorGUI.assemble = true;

@@ -27,6 +27,7 @@ namespace OASIS
         public bool canUseRatchet = true;
         public Vector3 positionStep = new Vector3(0, 0, -0.0025f);
         public Vector3 rotationStep = new Vector3(0, 0, 45);
+        public bool disableSound;
         public bool useCustomLayerMask;
         bool canBeBolted;
         bool onCooldown;
@@ -99,7 +100,7 @@ namespace OASIS
 
             tightness += value;
             onTightnessChanged?.Invoke(value);
-            MasterAudio.PlaySound3DAndForget("CarBuilding", sourceTrans: transform, variationName: "bolt_screw");
+            if (!disableSound) MasterAudio.PlaySound3DAndForget("CarBuilding", sourceTrans: transform, variationName: "bolt_screw");
 
             onCooldown = true;
             yield return new WaitForSeconds(cooldown);
