@@ -1,9 +1,8 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace OASIS
 {
-    public class Part : Interactable
+    public class Part : BasePart
     {
         public class RigidbodyCache
         {
@@ -41,61 +40,7 @@ namespace OASIS
             }
         }
 
-        public RigidbodyCache rigidbodyCache { get; private set; }
-        public Rigidbody rigidbody { get; private set; }
-        public int attachedTo
-        {
-            get => _attachedTo;
-            set
-            {
-                if (value == _attachedTo) return;
-
-                if (value == -1)
-                {
-                    if (bolts != null)
-                    {
-                        for (var i = 0; i < bolts.Length; i++)
-                        {
-                            bolts[i].gameObject.SetActive(false);
-                            bolts[i].tightness = 0;
-                        }
-                    }
-
-                    rigidbody = gameObject.AddComponent<Rigidbody>();
-                    rigidbodyCache.applyTo(rigidbody);
-                    rigidbodyCache = null;
-
-                    transform.SetParent(null);
-                    tag = "PART";
-
-                    triggers[_attachedTo].enabled = true;
-                }
-                else
-                {
-                    if (bolts != null)
-                    {
-                        for (var i = 0; i < bolts.Length; i++) bolts[i].gameObject.SetActive(true);
-                    }
-                    if (!rigidbody) rigidbody = GetComponent<Rigidbody>();
-
-                    if (_attachedTo == -1)
-                    {
-                        rigidbodyCache = new RigidbodyCache(rigidbody);
-                        Destroy(rigidbody);
-                    }
-                    else triggers[_attachedTo].enabled = true;
-
-                    transform.SetParent(triggers[value].transform);
-                    transform.localPosition = Vector3.zero;
-                    transform.localRotation = Quaternion.identity;
-                    tag = "Untagged";
-
-                    triggers[value].enabled = false;
-                }
-
-                _attachedTo = value;
-            }
-        }
+        public RigidbodyCache rigidbodyCache { get; internal set; }
         public int tightness
         {
             get
@@ -107,85 +52,25 @@ namespace OASIS
                 return sum;
             }
         }
-        public Action<int> onAttach;
-        public Action<int> onDetach;
-        public Func<bool> canAttach;
-        public Func<bool> canDetach;
-        public Collider[] triggers;
-        public Bolt[] bolts;
-        public bool disableSound;
-        public bool useCustomLayerMask;
-        int _attachedTo = -1;
-        int triggerIndex = -1;
 
-        public override void mouseOver()
+        internal override void attach(int index)
         {
-            if (attachedTo == -1) return;
-            if (bolts != null)
+            base.attach(index);
+
+            if (_attachedTo == -1)
             {
-                for (var i = 0; i < bolts.Length; i++)
-                {
-                    if (bolts[i].tightness != 0)
-                    {
-                        CursorGUI.disassemble = false;
-                        return;
-                    }
-                }
-            }
-            if (canDetach != null && !canDetach.Invoke()) return;
-
-            if (Input.GetMouseButtonDown(1))
-            {
-                var index = attachedTo;
-                attachedTo = -1;
-                onDetach?.Invoke(index);
-                if (!disableSound) MasterAudio.PlaySound3DAndForget("CarBuilding", sourceTrans: transform, variationName: "disassemble");
-                CursorGUI.disassemble = false;
-            }
-            else CursorGUI.disassemble = true;
-        }
-
-        public override void mouseExit()
-        {
-            if (attachedTo != -1) CursorGUI.disassemble = false;
-        }
-
-        public void Awake()
-        {
-            rigidbody = GetComponent<Rigidbody>();
-            if (!useCustomLayerMask) layerMask = 1 << 19;
-        }
-
-        public void OnTriggerEnter(Collider other)
-        {
-            if (transform.parent == null) return;
-
-            var i = Array.IndexOf(triggers, other);
-            if (i != -1) triggerIndex = i;
-        }
-
-        public void OnTriggerExit(Collider other)
-        {
-            if (triggerIndex != -1 && other == triggers[triggerIndex])
-            {
-                triggerIndex = -1;
-                CursorGUI.assemble = false;
+                rigidbodyCache = new RigidbodyCache(rigidbody);
+                Destroy(rigidbody);
             }
         }
 
-        public void LateUpdate()
+        internal override void detach()
         {
-            if (attachedTo != -1 || triggerIndex == -1 || (canAttach != null && !canAttach.Invoke())) return;
+            base.detach();
 
-            if (Input.GetMouseButtonDown(0))
-            {
-                attachedTo = triggerIndex;
-                onAttach?.Invoke(triggerIndex);
-                triggerIndex = -1;
-                if (!disableSound) MasterAudio.PlaySound3DAndForget("CarBuilding", sourceTrans: transform, variationName: "assemble");
-                CursorGUI.assemble = false;
-            }
-            else CursorGUI.assemble = true;
+            rigidbody = gameObject.AddComponent<Rigidbody>();
+            rigidbodyCache.applyTo(rigidbody);
+            rigidbodyCache = null;
         }
     }
 }
