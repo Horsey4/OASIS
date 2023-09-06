@@ -9,7 +9,7 @@ namespace OASIS
         public int tightness { get; internal set; }
         public Action<int, float> onBreak;
         public float breakForce = Mathf.Infinity;
-        public float breakForceStep = 0;
+        public float breakForceStep;
         public int unbreakableAtTightness = -1;
 
         public void Start()
