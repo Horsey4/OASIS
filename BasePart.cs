@@ -27,6 +27,7 @@ namespace OASIS
         public Bolt[] bolts;
         public bool disableSound;
         public bool useCustomLayerMask;
+        internal string tagCache;
         internal int _attachedTo = -1;
         internal int triggerIndex = -1;
 
@@ -111,6 +112,7 @@ namespace OASIS
             transform.SetParent(triggers[index].transform);
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
+            tagCache = tag;
             tag = "Untagged";
 
             if (_attachedTo != -1) triggers[_attachedTo].enabled = true;
@@ -129,7 +131,8 @@ namespace OASIS
             }
 
             transform.SetParent(null);
-            tag = "PART";
+            tag = tagCache;
+            tagCache = null;
 
             triggers[_attachedTo].enabled = true;
         }
