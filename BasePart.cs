@@ -112,7 +112,8 @@ namespace OASIS
             transform.SetParent(triggers[index].transform);
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
-            tagCache = tag;
+            if (tag == "Untagged") tagCache = "PART";
+            else tagCache = tag;
             tag = "Untagged";
 
             if (_attachedTo != -1) triggers[_attachedTo].enabled = true;
