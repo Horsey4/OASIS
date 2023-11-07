@@ -53,7 +53,7 @@ namespace OASIS
             }
         }
 
-        internal override void attach(int index)
+        public override void attach(int index)
         {
             base.attach(index);
 
@@ -64,7 +64,7 @@ namespace OASIS
             }
         }
 
-        internal override void detach()
+        public override void detach()
         {
             base.detach();
 

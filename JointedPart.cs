@@ -37,12 +37,12 @@ namespace OASIS
         public void OnJointBreak(float breakForce)
         {
             var index = attachedTo;
-            attachedTo = -1;
+            detach();
             onBreak?.Invoke(index, breakForce);
             if (!disableSound) MasterAudio.PlaySound3DAndForget("CarBuilding", sourceTrans: transform, variationName: "disassemble");
         }
 
-        internal override void attach(int index)
+        public override void attach(int index)
         {
             base.attach(index);
 
@@ -55,7 +55,7 @@ namespace OASIS
             }
         }
 
-        internal override void detach()
+        public override void detach()
         {
             base.detach();
 

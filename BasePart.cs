@@ -50,7 +50,7 @@ namespace OASIS
             if (Input.GetMouseButtonDown(1))
             {
                 var index = attachedTo;
-                attachedTo = -1;
+                detach();
                 onDetach?.Invoke(index);
                 if (!disableSound) MasterAudio.PlaySound3DAndForget("CarBuilding", sourceTrans: transform, variationName: "disassemble");
                 CursorGUI.disassemble = false;
@@ -92,7 +92,7 @@ namespace OASIS
 
             if (Input.GetMouseButtonDown(0))
             {
-                attachedTo = triggerIndex;
+                attach(triggerIndex);
                 onAttach?.Invoke(triggerIndex);
                 triggerIndex = -1;
                 if (!disableSound) MasterAudio.PlaySound3DAndForget("CarBuilding", sourceTrans: transform, variationName: "assemble");
@@ -101,7 +101,7 @@ namespace OASIS
             else CursorGUI.assemble = true;
         }
 
-        internal virtual void attach(int index)
+        public virtual void attach(int index)
         {
             if (bolts != null)
             {
@@ -120,7 +120,7 @@ namespace OASIS
             triggers[index].enabled = false;
         }
 
-        internal virtual void detach()
+        public virtual void detach()
         {
             if (bolts != null)
             {
