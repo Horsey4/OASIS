@@ -16,7 +16,7 @@ namespace OASIS
         {
             for (var i = 0; i < bolts.Length; i++)
             {
-                bolts[i].onTightnessChanged += (deltaTightness) =>
+                bolts[i].onTightnessSet += (deltaTightness) =>
                 {
                     tightness += deltaTightness;
 

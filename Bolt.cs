@@ -16,6 +16,7 @@ namespace OASIS
             get => _tightness;
             set
             {
+                onTightnessSet?.Invoke(value - _tightness);
                 transform.localPosition += transform.localRotation * positionStep * (value - _tightness);
                 transform.localRotation *= Quaternion.Euler(rotationStep * (value - _tightness));
                 _tightness = value;
@@ -29,6 +30,7 @@ namespace OASIS
         public Vector3 rotationStep = new Vector3(0, 0, 45);
         public bool disableSound;
         public bool useCustomLayerMask;
+        internal Action<int> onTightnessSet;
         bool canBeBolted;
         bool onCooldown;
         int _tightness;
