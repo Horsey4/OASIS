@@ -10,7 +10,7 @@ namespace OASIS
         public float maxInteractionDistance = 1;
 
         static readonly Dictionary<int, RaycastHit> raycasts = new();
-        static readonly Camera camera;
+        static Camera camera;
         static int lastFrame;
         static Ray ray;
 
@@ -40,6 +40,7 @@ namespace OASIS
 
         public static bool raycast(out RaycastHit hit, float distance, int layerMask)
         {
+            if (!camera) camera = Camera.main;
             if (Time.frameCount != lastFrame)
             {
                 raycasts.Clear();
@@ -66,11 +67,6 @@ namespace OASIS
                 raycasts.Add(layerMask, hit);
                 return hit.collider;
             }
-        }
-
-        static Interactable()
-        {
-            camera = GameObject.Find("PLAYER/Pivot/AnimPivot/Camera/FPSCamera/FPSCamera").GetComponent<Camera>();
         }
     }
 }

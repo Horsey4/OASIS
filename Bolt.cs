@@ -37,8 +37,8 @@ namespace OASIS
 
         static readonly FsmFloat wrenchSize = FsmVariables.GlobalVariables.FindFsmFloat("ToolWrenchSize");
         static readonly FsmBool usingRatchet = FsmVariables.GlobalVariables.FindFsmBool("PlayerHasRatchet");
-        static readonly Material highlightMaterial;
-        static readonly FsmBool ratchetSwitch;
+        static Material highlightMaterial;
+        static FsmBool ratchetSwitch;
 
         public override void mouseOver()
         {
@@ -80,6 +80,19 @@ namespace OASIS
             gameObject.SetActive(false);
             transform.localPosition += transform.localRotation * positionStep * -maxTightness;
             transform.localRotation *= Quaternion.Euler(rotationStep * -maxTightness);
+
+            if (!highlightMaterial)
+            {
+                var spanner = GameObject.Find("PLAYER/Pivot/AnimPivot/Camera/FPSCamera").transform.Find("2Spanner");
+
+                var fsm = spanner.Find("Pivot/Ratchet").GetComponent<PlayMakerFSM>();
+                fsm.InitializeFSM();
+                ratchetSwitch = fsm.FsmVariables.FindFsmBool("Switch");
+
+                fsm = spanner.Find("Raycast").GetComponents<PlayMakerFSM>()[1];
+                fsm.InitializeFSM();
+                highlightMaterial = ((SetMaterial)fsm.FsmStates[2].Actions[1]).material.Value;
+            }
         }
 
         IEnumerator tryChangeTightness(int value, float cooldown)
@@ -103,19 +116,6 @@ namespace OASIS
                 renderer.material = materialCache;
                 materialCache = null;
             }
-        }
-
-        static Bolt()
-        {
-            var spanner = GameObject.Find("PLAYER/Pivot/AnimPivot/Camera/FPSCamera").transform.Find("2Spanner");
-
-            var fsm = spanner.Find("Pivot/Ratchet").GetComponent<PlayMakerFSM>();
-            fsm.InitializeFSM();
-            ratchetSwitch = fsm.FsmVariables.FindFsmBool("Switch");
-
-            fsm = spanner.Find("Raycast").GetComponents<PlayMakerFSM>()[1];
-            fsm.InitializeFSM();
-            highlightMaterial = ((SetMaterial)fsm.FsmStates[2].Actions[1]).material.Value;
         }
     }
 }
