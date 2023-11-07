@@ -9,8 +9,8 @@ namespace OASIS
 {
     public class Bolt : Interactable
     {
-        public Material materialCache { get; set; }
         public Renderer renderer { get; private set; }
+        public Material materialCache { get; set; }
         public int tightness
         {
             get => _tightness;
@@ -35,11 +35,10 @@ namespace OASIS
         bool onCooldown;
         int _tightness;
 
-        static FsmFloat wrenchSize = FsmVariables.GlobalVariables.FindFsmFloat("ToolWrenchSize");
-        static FsmBool usingRatchet = FsmVariables.GlobalVariables.FindFsmBool("PlayerHasRatchet");
-        static Transform spanner;
-        static Material highlightMaterial;
-        static FsmBool ratchetSwitch;
+        static readonly FsmFloat wrenchSize = FsmVariables.GlobalVariables.FindFsmFloat("ToolWrenchSize");
+        static readonly FsmBool usingRatchet = FsmVariables.GlobalVariables.FindFsmBool("PlayerHasRatchet");
+        static readonly Material highlightMaterial;
+        static readonly FsmBool ratchetSwitch;
 
         public override void mouseOver()
         {
@@ -56,14 +55,14 @@ namespace OASIS
                 {
                     if (Input.mouseScrollDelta.y != 0)
                     {
-                        if (ratchetSwitch.Value) StartCoroutine(tryOffsetTightness(1, 0.08f));
-                        else StartCoroutine(tryOffsetTightness(-1, 0.08f));
+                        if (ratchetSwitch.Value) StartCoroutine(tryChangeTightness(1, 0.08f));
+                        else StartCoroutine(tryChangeTightness(-1, 0.08f));
                     }
                 }
                 else
                 {
-                    if (Input.mouseScrollDelta.y > 0) StartCoroutine(tryOffsetTightness(1, 0.28f));
-                    else if (Input.mouseScrollDelta.y < 0) StartCoroutine(tryOffsetTightness(-1, 0.28f));
+                    if (Input.mouseScrollDelta.y > 0) StartCoroutine(tryChangeTightness(1, 0.28f));
+                    else if (Input.mouseScrollDelta.y < 0) StartCoroutine(tryChangeTightness(-1, 0.28f));
                 }
             }
             else tryResetMaterial();
@@ -81,22 +80,9 @@ namespace OASIS
             gameObject.SetActive(false);
             transform.localPosition += transform.localRotation * positionStep * -maxTightness;
             transform.localRotation *= Quaternion.Euler(rotationStep * -maxTightness);
-
-            if (!spanner)
-            {
-                spanner = GameObject.Find("PLAYER/Pivot/AnimPivot/Camera/FPSCamera").transform.Find("2Spanner");
-
-                var fsm = spanner.Find("Pivot/Ratchet").GetComponent<PlayMakerFSM>();
-                fsm.InitializeFSM();
-                ratchetSwitch = fsm.FsmVariables.FindFsmBool("Switch");
-
-                fsm = spanner.Find("Raycast").GetComponents<PlayMakerFSM>()[1];
-                fsm.InitializeFSM();
-                highlightMaterial = ((SetMaterial)fsm.FsmStates[2].Actions[1]).material.Value;
-            }
         }
 
-        IEnumerator tryOffsetTightness(int value, float cooldown)
+        IEnumerator tryChangeTightness(int value, float cooldown)
         {
             if (onCooldown || tightness + value > maxTightness || tightness + value < 0) yield break;
 
@@ -117,6 +103,19 @@ namespace OASIS
                 renderer.material = materialCache;
                 materialCache = null;
             }
+        }
+
+        static Bolt()
+        {
+            var spanner = GameObject.Find("PLAYER/Pivot/AnimPivot/Camera/FPSCamera").transform.Find("2Spanner");
+
+            var fsm = spanner.Find("Pivot/Ratchet").GetComponent<PlayMakerFSM>();
+            fsm.InitializeFSM();
+            ratchetSwitch = fsm.FsmVariables.FindFsmBool("Switch");
+
+            fsm = spanner.Find("Raycast").GetComponents<PlayMakerFSM>()[1];
+            fsm.InitializeFSM();
+            highlightMaterial = ((SetMaterial)fsm.FsmStates[2].Actions[1]).material.Value;
         }
     }
 }

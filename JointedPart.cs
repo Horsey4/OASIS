@@ -5,8 +5,7 @@ namespace OASIS
 {
     public class JointedPart : BasePart
     {
-        public FixedJoint joint { get; internal set; }
-        public int tightness { get; internal set; }
+        public FixedJoint joint { get; private set; }
         public Action<int, float> onBreak;
         public float breakForce = Mathf.Infinity;
         public float breakForceStep;
@@ -14,12 +13,12 @@ namespace OASIS
 
         public void Start()
         {
+            if (bolts == null) return;
+
             for (var i = 0; i < bolts.Length; i++)
             {
                 bolts[i].onTightnessSet += (deltaTightness) =>
                 {
-                    tightness += deltaTightness;
-
                     if (unbreakableAtTightness >= 0 && tightness >= unbreakableAtTightness)
                     {
                         joint.breakForce = Mathf.Infinity;
@@ -46,13 +45,11 @@ namespace OASIS
         {
             base.attach(index);
 
-            if (_attachedTo == -1)
-            {
-                joint = gameObject.AddComponent<FixedJoint>();
-                joint.connectedBody = transform.parent.GetComponentInParent<Rigidbody>();
-                joint.breakForce = breakForce;
-                joint.breakTorque = breakForce;
-            }
+            if (joint) Destroy(joint);
+            joint = gameObject.AddComponent<FixedJoint>();
+            joint.connectedBody = transform.parent.GetComponentInParent<Rigidbody>();
+            joint.breakForce = breakForce;
+            joint.breakTorque = breakForce;
         }
 
         public override void detach()
@@ -61,6 +58,5 @@ namespace OASIS
 
             if (joint) Destroy(joint);
         }
-
     }
 }

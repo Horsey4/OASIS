@@ -40,24 +40,13 @@ namespace OASIS
             }
         }
 
-        public RigidbodyCache rigidbodyCache { get; internal set; }
-        public int tightness
-        {
-            get
-            {
-                if (bolts == null) return 0;
-
-                var sum = 0;
-                for (var i = 0; i < bolts.Length; i++) sum += bolts[i].tightness;
-                return sum;
-            }
-        }
+        public RigidbodyCache rigidbodyCache { get; private set; }
 
         public override void attach(int index)
         {
             base.attach(index);
 
-            if (_attachedTo == -1)
+            if (rigidbody)
             {
                 rigidbodyCache = new RigidbodyCache(rigidbody);
                 Destroy(rigidbody);

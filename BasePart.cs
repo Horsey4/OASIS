@@ -5,7 +5,7 @@ namespace OASIS
 {
     public class BasePart : Interactable
     {
-        public Rigidbody rigidbody { get; internal set; }
+        public string tagCache { get; set; }
         public int attachedTo
         {
             get => _attachedTo;
@@ -13,12 +13,14 @@ namespace OASIS
             {
                 if (value == _attachedTo) return;
 
-                if (value == -1) detach();
+                if (value < 0) detach();
                 else attach(value);
 
                 _attachedTo = value;
             }
         }
+        public Rigidbody rigidbody { get; internal set; }
+        public int tightness { get; private set; }
         public Action<int> onAttach;
         public Action<int> onDetach;
         public Func<bool> canAttach;
@@ -27,23 +29,16 @@ namespace OASIS
         public Bolt[] bolts;
         public bool disableSound;
         public bool useCustomLayerMask;
-        internal string tagCache;
-        internal int _attachedTo = -1;
-        internal int triggerIndex = -1;
+        int inTriggerIndex = -1;
+        int _attachedTo = -1;
 
         public override void mouseOver()
         {
-            if (attachedTo == -1) return;
-            if (bolts != null)
+            if (attachedTo < 0) return;
+            if (tightness > 0)
             {
-                for (var i = 0; i < bolts.Length; i++)
-                {
-                    if (bolts[i].tightness != 0)
-                    {
-                        CursorGUI.disassemble = false;
-                        return;
-                    }
-                }
+                CursorGUI.disassemble = false;
+                return;
             }
             if (canDetach != null && !canDetach.Invoke()) return;
 
@@ -60,41 +55,45 @@ namespace OASIS
 
         public override void mouseExit()
         {
-            if (attachedTo != -1) CursorGUI.disassemble = false;
+            if (attachedTo >= 0) CursorGUI.disassemble = false;
         }
 
         public void Awake()
         {
             rigidbody = GetComponent<Rigidbody>();
+            if (bolts != null)
+            {
+                for (var i = 0; i < bolts.Length; i++) bolts[i].onTightnessSet += (deltaTightness) => tightness += deltaTightness;
+            }
             if (!useCustomLayerMask) layerMask = 1 << 19;
         }
 
         public void OnTriggerEnter(Collider other)
         {
-            if (transform.parent == null) return;
+            if (!transform.parent) return;
 
             var i = Array.IndexOf(triggers, other);
-            if (i != -1) triggerIndex = i;
+            if (i >= 0) inTriggerIndex = i;
         }
 
         public void OnTriggerExit(Collider other)
         {
-            if (triggerIndex != -1 && other == triggers[triggerIndex])
+            if (inTriggerIndex >= 0 && other == triggers[inTriggerIndex])
             {
-                triggerIndex = -1;
+                inTriggerIndex = -1;
                 CursorGUI.assemble = false;
             }
         }
 
         public void LateUpdate()
         {
-            if (attachedTo != -1 || triggerIndex == -1 || (canAttach != null && !canAttach.Invoke())) return;
+            if (attachedTo >= 0 || inTriggerIndex < 0 || (canAttach != null && !canAttach.Invoke())) return;
 
             if (Input.GetMouseButtonDown(0))
             {
-                attach(triggerIndex);
-                onAttach?.Invoke(triggerIndex);
-                triggerIndex = -1;
+                attach(inTriggerIndex);
+                onAttach?.Invoke(inTriggerIndex);
+                inTriggerIndex = -1;
                 if (!disableSound) MasterAudio.PlaySound3DAndForget("CarBuilding", sourceTrans: transform, variationName: "assemble");
                 CursorGUI.assemble = false;
             }
@@ -116,8 +115,9 @@ namespace OASIS
             else tagCache = tag;
             tag = "Untagged";
 
-            if (_attachedTo != -1) triggers[_attachedTo].enabled = true;
+            if (attachedTo >= 0) triggers[attachedTo].enabled = true;
             triggers[index].enabled = false;
+            _attachedTo = index;
         }
 
         public virtual void detach()
@@ -135,7 +135,8 @@ namespace OASIS
             tag = tagCache;
             tagCache = null;
 
-            triggers[_attachedTo].enabled = true;
+            triggers[attachedTo].enabled = true;
+            _attachedTo = -1;
         }
     }
 }
