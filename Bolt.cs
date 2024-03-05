@@ -1,4 +1,4 @@
-﻿using HutongGames.PlayMaker;
+using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using MSCLoader;
 using System;
@@ -37,6 +37,7 @@ namespace OASIS
 
         static readonly FsmFloat wrenchSize = FsmVariables.GlobalVariables.FindFsmFloat("ToolWrenchSize");
         static readonly FsmBool usingRatchet = FsmVariables.GlobalVariables.FindFsmBool("PlayerHasRatchet");
+        static Transform spanner;
         static Material highlightMaterial;
         static FsmBool ratchetSwitch;
 
@@ -81,9 +82,9 @@ namespace OASIS
             transform.localPosition += transform.localRotation * positionStep * -maxTightness;
             transform.localRotation *= Quaternion.Euler(rotationStep * -maxTightness);
 
-            if (!highlightMaterial)
+            if (!spanner)
             {
-                var spanner = GameObject.Find("PLAYER/Pivot/AnimPivot/Camera/FPSCamera").transform.Find("2Spanner");
+                spanner = GameObject.Find("PLAYER/Pivot/AnimPivot/Camera/FPSCamera").transform.Find("2Spanner");
 
                 var fsm = spanner.Find("Pivot/Ratchet").GetComponent<PlayMakerFSM>();
                 fsm.InitializeFSM();
